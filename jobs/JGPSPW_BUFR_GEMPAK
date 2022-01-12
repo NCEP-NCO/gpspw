@@ -1,0 +1,72 @@
+#!/bin/sh
+
+date
+
+export PS4=' $SECONDS + '
+set -x
+
+###############################################
+# Determine Work Directory
+###############################################
+export DATA=${DATA:-${DATAROOT}/${jobid}}
+mkdir -p $DATA
+cd $DATA
+
+###############################################
+# Determine Job Output Name on System
+###############################################
+export pgmout=OUTPUT.$$
+export cycle=${cycle:-t${cyc}z}
+
+###############################################
+# Run setpdy and initialize PDY variables
+###############################################
+setpdy.sh
+. ./PDY
+
+###############################################
+# SENDECF  - Flag Events on ECF
+# SENDCOM  - Copy Files From TMPDIR to $COMOUT
+# SENDDBN  - Issue DBNet Client Calls
+# KEEPDATA - Keep Data Directory after run
+###############################################
+export KEEPDATA=${KEEPDATA:-NO}
+export SENDCOM=${SENDCOM:-YES}
+export SENDDBN=${SENDDBN:-YES}
+export SENDECF=${SENDECF:-YES}
+
+###############################################
+# Specify Execution Areas
+###############################################
+export USHgpspw=${USHgpspw:-${HOMEgpspw}/ush}
+export EXECgpspw=${EXECgpspw:-${HOMEgpspw}/exec}
+
+###############################################
+# Specify NET and RUN Name and Model
+###############################################
+export NET=${NET:-gpspw}
+export RUN=${RUN:-gpspw}
+
+##############################################
+# Define COM and DCOM directories
+##############################################
+export DCOM=${DCOM:-${DCOMROOT:?}}
+export COMIN=${COMIN:-$(compath.py ${envir}/${NET}/${gpspw_ver})/${RUN}.${PDY}/gempak}
+export COMOUT=${COMOUT:-$(compath.py -o ${NET}/${gpspw_ver}/${RUN}.${PDY})/gempak}
+
+mkdir -p $COMOUT
+
+env
+
+#############################################
+# Execute the Script
+#############################################
+$HOMEgpspw/scripts/exgpspw_bufr_gempak.sh
+export err=$?; err_chk
+
+msg="JOB $job HAS COMPLETED NORMALLY"
+
+cd $DATAROOT
+if [ "$KEEPDATA" != YES ]; then
+   rm -rf $DATA
+fi

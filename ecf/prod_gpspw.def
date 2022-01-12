@@ -1,0 +1,17 @@
+suite prod
+ family primary
+  family cron
+   family gpspw
+    edit PACKAGEHOME '/lfs/h1/ops/%ENVIR%/packages/gpspw.%gpspw_ver%'
+    edit PROJ 'NCO'
+    family v1.2
+     defstatus complete
+      task jgpspw_bufr_gempak
+      cron 00:20 23:50 00:30
+    endfamily
+   endfamily
+  endfamily
+ endfamily
+endsuite
+
+#ecflow_client --replace=/prod/primary/cron/gpspw /lfs/h1/ops/prod/packages/gpspw.v1.2.0/ecf/prod_gpspw.def --host=decflow01 --port=31415
